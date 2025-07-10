@@ -17,7 +17,7 @@ const Profile = ({ name, handleAddPlayer }: ProfileProps) => {
           {name ? "" : "+"}
         </div>
       }
-      <p className='text-sm '>{name}</p>
+      <p className='text-sm '>{name?name:<span className='text-xs font-light text-gray-500'>Add player</span>}</p>
     </div>
   )
 }
