@@ -133,13 +133,13 @@ export default function Home() {
     <div className="px-4">
       <div className="flex gap-2 mb-4">
         <button
-          className={`px-4 py-1 rounded-full text-sm font-medium ${matchMode === 'single' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 rounded-full text-sm font-medium ${matchMode === 'single' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
           onClick={() => setMatchMode('single')}
         >
           Single
         </button>
         <button
-          className={`px-4 py-1 rounded-full text-sm font-medium ${matchMode === 'double' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 rounded-full text-sm font-medium ${matchMode === 'double' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
           onClick={() => setMatchMode('double')}
         >
           Double
