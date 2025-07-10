@@ -5,7 +5,7 @@ import ProfileList from "./components/shared/ProfileList"
 import Modal from "./components/shared/Modal"
 import Profile from "./components/shared/Profile"
 
-type Team = { p1: string; p2: string }
+type Team = { p1: string; p2?: string }
 type Match = { teamA: Team; teamB: Team }
 
 export default function Home() {
@@ -17,19 +17,12 @@ export default function Home() {
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [teamStreaks, setTeamStreaks] = useState<Map<string, number>>(new Map())
+  const [matchMode, setMatchMode] = useState<'single' | 'double'>('double')
   const [restingPlayer, setRestingPlayer] = useState<{ name: string } | null>(null)
 
   useEffect(() => {
     const storedPlayers = localStorage.getItem("players")
-    const storedTeams = localStorage.getItem("teams")
-    const storedMatches = localStorage.getItem("allMatches")
-    const storedMatchIndex = localStorage.getItem("currentMatchIndex")
-
     if (storedPlayers) setPlayers(JSON.parse(storedPlayers))
-    if (storedTeams) setTeams(JSON.parse(storedTeams))
-    if (storedMatches) setAllMatches(JSON.parse(storedMatches))
-    if (storedMatchIndex) setCurrentMatchIndex(JSON.parse(storedMatchIndex))
-
     setHydrated(true)
   }, [])
 
@@ -37,69 +30,46 @@ export default function Home() {
     localStorage.setItem("players", JSON.stringify(players))
   }, [players])
 
-  useEffect(() => {
-    localStorage.setItem("teams", JSON.stringify(teams))
-  }, [teams])
-
-  useEffect(() => {
-    localStorage.setItem("allMatches", JSON.stringify(allMatches))
-  }, [allMatches])
-
-  useEffect(() => {
-    localStorage.setItem("currentMatchIndex", JSON.stringify(currentMatchIndex))
-  }, [currentMatchIndex])
-
   if (!hydrated) return null
 
   const handleAddPlayer = () => setIsAddPlayerOpen(true)
 
   const addPlayer = (name: string) => {
-    setPlayers((prev) => [...prev, { name }])
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1)
+    setPlayers((prev) => [...prev, { name: formattedName }])
   }
 
-  const getTeamKey = (team: Team) => `${team.p1}-${team.p2}`
+  const getTeamKey = (team: Team) => `${team.p1}-${team.p2 || ''}`
+
   const formTeams = () => {
-    const totalPlayers = players.length;
-
-    if (totalPlayers < 4) {
-      alert("You need at least 4 players to start a tournament.");
-      return;
+    if (players.length < 2) {
+      alert("You need at least 2 players to start.")
+      return
     }
 
-    // Prepare the list: all players + last rest if exists
-    let pool = [...players];
-    if (restingPlayer) {
-      pool.push(restingPlayer);
-      setRestingPlayer(null);
+    const shuffled = [...players].sort(() => Math.random() - 0.5)
+    const formedTeams: Team[] = []
+    let rest: { name: string } | null = null
+
+    if (matchMode === "double") {
+      if (shuffled.length % 2 === 1) {
+        rest = shuffled.pop() || null
+      }
+
+      for (let i = 0; i + 1 < shuffled.length; i += 2) {
+        formedTeams.push({ p1: shuffled[i].name, p2: shuffled[i + 1].name })
+      }
+
+    } else {
+      shuffled.forEach((p) => formedTeams.push({ p1: p.name }))
     }
 
-    // Make sure all names are unique
-    const namesSet = new Set(pool.map(p => p.name));
-    pool = Array.from(namesSet).map(name => ({ name }));
-
-    // Shuffle the pool
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-
-    // Pick one to rest if odd
-    let localRestingPlayer: { name: string } | null = null;
-    if (shuffled.length % 2 !== 0) {
-      const restIndex = Math.floor(Math.random() * shuffled.length);
-      localRestingPlayer = shuffled.splice(restIndex, 1)[0];
-    }
-
-    // Form teams
-    const formedTeams: Team[] = [];
-    for (let i = 0; i < shuffled.length; i += 2) {
-      formedTeams.push({ p1: shuffled[i].name, p2: shuffled[i + 1].name });
-    }
-
-    // Update state safely
-    setRestingPlayer(localRestingPlayer);
-    setTeams(formedTeams);
-    generateAllMatches(formedTeams);
-    setCurrentMatchIndex(0);
-    setTeamStreaks(new Map());
-  };
+    setTeams(formedTeams)
+    generateAllMatches(formedTeams)
+    setCurrentMatchIndex(0)
+    setTeamStreaks(new Map())
+    setRestingPlayer(rest)
+  }
 
   const generateAllMatches = (teams: Team[]) => {
     const matches: Match[] = []
@@ -133,7 +103,6 @@ export default function Home() {
       newStreaks.set(teamAKey, (newStreaks.get(teamAKey) || 0) + 1)
       newStreaks.set(teamBKey, (newStreaks.get(teamBKey) || 0) + 1)
 
-      // reset streaks for other teams
       teams.forEach((team) => {
         const key = getTeamKey(team)
         if (key !== teamAKey && key !== teamBKey) {
@@ -145,21 +114,7 @@ export default function Home() {
       setTeamStreaks(newStreaks)
     } else {
       alert("All matches completed! Generating new round...")
-      const shuffled = [...players].sort(() => Math.random() - 0.5)
-      const newTeams: Team[] = []
-      for (let i = 0; i + 1 < shuffled.length; i += 2) {
-        newTeams.push({ p1: shuffled[i].name, p2: shuffled[i + 1].name })
-      }
-      const newMatches: Match[] = []
-      for (let i = 0; i < newTeams.length; i++) {
-        for (let j = i + 1; j < newTeams.length; j++) {
-          newMatches.push({ teamA: newTeams[i], teamB: newTeams[j] })
-        }
-      }
-      setTeams(newTeams)
-      setAllMatches(newMatches)
-      setCurrentMatchIndex(0)
-      setTeamStreaks(new Map())
+      formTeams()
     }
   }
 
@@ -169,18 +124,32 @@ export default function Home() {
     setAllMatches([])
     setCurrentMatchIndex(0)
     setTeamStreaks(new Map())
+    setRestingPlayer(null)
   }
 
   const currentMatch = allMatches[currentMatchIndex]
 
-
   return (
     <div className="px-4">
+      <div className="flex gap-2 mb-4">
+        <button
+          className={`px-4 py-1 rounded-full text-sm font-medium ${matchMode === 'single' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => setMatchMode('single')}
+        >
+          Single
+        </button>
+        <button
+          className={`px-4 py-1 rounded-full text-sm font-medium ${matchMode === 'double' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => setMatchMode('double')}
+        >
+          Double
+        </button>
+      </div>
+
       <div className="bg-white rounded-3xl p-6">
         <ProfileList players={players} handleAddPlayer={handleAddPlayer} />
         <Modal isOpen={isAddPlayerOpen} onClose={() => setIsAddPlayerOpen(false)}>
-          <h2 className="text-xl font-bold mb-4">Add Players </h2>
-          <span className="text-xs font-light text-gray-400"> hint: you can add multiple devide by space</span>
+          <h2 className="text-xl font-bold mb-4">Add Players</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -188,7 +157,7 @@ export default function Home() {
                 .split(" ")
                 .map((name) => name.trim())
                 .filter((name) => name.length > 0)
-                .map((name) => name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())
+
               if (names.length === 0) return
 
               names.forEach((name) => addPlayer(name))
@@ -214,7 +183,7 @@ export default function Home() {
       </div>
 
       <div className="flex gap-3 mt-4">
-        <button className="flex-1 bg-gradient-to-r from-[#00d2ff] to-[#3a47d5] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={formTeams} >
+        <button className="flex-1 bg-gradient-to-r from-[#00d2ff] to-[#3a47d5] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={formTeams} disabled={players.length < 2}>
           Start Tournament
         </button>
         <button className="flex-1 bg-gradient-to-r from-[#d53369] to-[#c67700] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={resetTournament}>
@@ -229,16 +198,17 @@ export default function Home() {
             {teams.map((team, index) => (
               <div key={index} className="bg-gray-100 p-3 rounded-xl flex gap-2 items-center">
                 <Profile name={team.p1} />
-                <Profile name={team.p2} />
+                {team.p2 && <Profile name={team.p2} />}
               </div>
             ))}
-
-            {restingPlayer && (
-              <div className="bg-yellow-100 text-gray-700 p-3 rounded-xl flex items-center gap-2">
-                <Profile name={restingPlayer.name} />
-              </div>
-            )}
+               {restingPlayer && (
+            <div className="bg-yellow-100 p-3 rounded-xl flex items-center">
+              <Profile name={restingPlayer.name} />
+            </div>
+          )}
           </div>
+
+       
         </div>
       )}
 
@@ -250,12 +220,12 @@ export default function Home() {
           <div className="flex justify-around items-center gap-6">
             <div className="flex gap-2">
               <Profile name={currentMatch.teamA.p1} />
-              <Profile name={currentMatch.teamA.p2} />
+              {currentMatch.teamA.p2 && <Profile name={currentMatch.teamA.p2} />}
             </div>
             <span className="text-gray-500 font-bold">vs</span>
             <div className="flex gap-2">
               <Profile name={currentMatch.teamB.p1} />
-              <Profile name={currentMatch.teamB.p2} />
+              {currentMatch.teamB.p2 && <Profile name={currentMatch.teamB.p2} />}
             </div>
           </div>
           <button className="mt-4 w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700" onClick={goToNextMatch}>
@@ -272,12 +242,12 @@ export default function Home() {
               <div key={index} className="bg-amber-100 rounded-xl p-3 flex justify-around items-center">
                 <div className="flex gap-2">
                   <Profile name={match.teamA.p1} />
-                  <Profile name={match.teamA.p2} />
+                  {match.teamA.p2 && <Profile name={match.teamA.p2} />}
                 </div>
                 <span className="text-gray-500 font-medium">vs</span>
                 <div className="flex gap-2">
                   <Profile name={match.teamB.p1} />
-                  <Profile name={match.teamB.p2} />
+                  {match.teamB.p2 && <Profile name={match.teamB.p2} />}
                 </div>
               </div>
             ))}
