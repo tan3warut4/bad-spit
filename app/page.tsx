@@ -186,7 +186,7 @@ export default function Home() {
       </div>
 
       <div className="flex gap-3 mt-4">
-        <button className="flex-1 bg-gradient-to-r from-[#00d2ff] to-[#3a47d5] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={formTeams} disabled={players.length < 4}>
+        <button className="flex-1 bg-gradient-to-r from-[#00d2ff] to-[#3a47d5] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={formTeams} >
           Start Tournament
         </button>
         <button className="flex-1 bg-gradient-to-r from-[#d53369] to-[#c67700] hover:scale-105 transition duration-300 text-white rounded-2xl p-4 cursor-pointer" onClick={resetTournament}>
