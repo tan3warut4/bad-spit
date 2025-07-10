@@ -11,8 +11,8 @@ const kanit = Kanit({
 })
 
 export const metadata: Metadata = {
-  title: "Badminton splits",
-  description: "Play badminton easy!",
+  title: "Teams splits",
+  description: "make Teams easy!",
 };
 
 export default function RootLayout({
