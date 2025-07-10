@@ -1,11 +1,10 @@
 import Profile from "./Profile"
 
 type ProfileListProps = {
-    mock: number
     players: { name: string }[]
     handleAddPlayer: () => void
 }
-const ProfileList = ({ mock, players, handleAddPlayer }: ProfileListProps) => {
+const ProfileList = ({ players, handleAddPlayer }: ProfileListProps) => {
     const placeHolderCount = 1
     const placeHolder = Array.from({ length: placeHolderCount })
 

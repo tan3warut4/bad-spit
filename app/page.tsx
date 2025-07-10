@@ -146,7 +146,7 @@ export default function Home() {
   return (
     <div className="px-4">
       <div className="bg-white rounded-3xl p-6">
-        <ProfileList mock={5} players={players} handleAddPlayer={handleAddPlayer} />
+        <ProfileList players={players} handleAddPlayer={handleAddPlayer} />
         <Modal isOpen={isAddPlayerOpen} onClose={() => setIsAddPlayerOpen(false)}>
           <h2 className="text-xl font-bold mb-4">Add Players</h2>
           <form
