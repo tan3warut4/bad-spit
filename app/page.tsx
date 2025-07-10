@@ -152,7 +152,8 @@ export default function Home() {
       <div className="bg-white rounded-3xl p-6">
         <ProfileList players={players} handleAddPlayer={handleAddPlayer} />
         <Modal isOpen={isAddPlayerOpen} onClose={() => setIsAddPlayerOpen(false)}>
-          <h2 className="text-xl font-bold mb-4">Add Players</h2>
+          <h2 className="text-xl font-bold mb-4">Add Players </h2>
+          <span className="text-xs font-light text-gray-400"> hint: you can add multiple devide by space</span> 
           <form
             onSubmit={(e) => {
               e.preventDefault()
