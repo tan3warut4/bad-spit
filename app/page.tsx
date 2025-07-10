@@ -59,6 +59,10 @@ export default function Home() {
   const getTeamKey = (team: Team) => `${team.p1}-${team.p2}`
 
   const formTeams = () => {
+    if (players.length < 4) {
+      alert("You need at least 4 players to start a tournament.")
+      return
+    }
     const shuffled = [...players].sort(() => Math.random() - 0.5)
     const formedTeams: Team[] = []
     for (let i = 0; i + 1 < shuffled.length; i += 2) {
