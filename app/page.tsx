@@ -58,48 +58,48 @@ export default function Home() {
   }
 
   const getTeamKey = (team: Team) => `${team.p1}-${team.p2}`
-const formTeams = () => {
-  const totalPlayers = players.length;
+  const formTeams = () => {
+    const totalPlayers = players.length;
 
-  if (totalPlayers < 4) {
-    alert("You need at least 4 players to start a tournament.");
-    return;
-  }
+    if (totalPlayers < 4) {
+      alert("You need at least 4 players to start a tournament.");
+      return;
+    }
 
-  // Prepare the list: all players + last rest if exists
-  let pool = [...players];
-  if (restingPlayer) {
-    pool.push(restingPlayer);
-    setRestingPlayer(null);
-  }
+    // Prepare the list: all players + last rest if exists
+    let pool = [...players];
+    if (restingPlayer) {
+      pool.push(restingPlayer);
+      setRestingPlayer(null);
+    }
 
-  // Make sure all names are unique
-  const namesSet = new Set(pool.map(p => p.name));
-  pool = Array.from(namesSet).map(name => ({ name }));
+    // Make sure all names are unique
+    const namesSet = new Set(pool.map(p => p.name));
+    pool = Array.from(namesSet).map(name => ({ name }));
 
-  // Shuffle the pool
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    // Shuffle the pool
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
 
-  // Pick one to rest if odd
-  let localRestingPlayer: { name: string } | null = null;
-  if (shuffled.length % 2 !== 0) {
-    const restIndex = Math.floor(Math.random() * shuffled.length);
-    localRestingPlayer = shuffled.splice(restIndex, 1)[0];
-  }
+    // Pick one to rest if odd
+    let localRestingPlayer: { name: string } | null = null;
+    if (shuffled.length % 2 !== 0) {
+      const restIndex = Math.floor(Math.random() * shuffled.length);
+      localRestingPlayer = shuffled.splice(restIndex, 1)[0];
+    }
 
-  // Form teams
-  const formedTeams: Team[] = [];
-  for (let i = 0; i < shuffled.length; i += 2) {
-    formedTeams.push({ p1: shuffled[i].name, p2: shuffled[i + 1].name });
-  }
+    // Form teams
+    const formedTeams: Team[] = [];
+    for (let i = 0; i < shuffled.length; i += 2) {
+      formedTeams.push({ p1: shuffled[i].name, p2: shuffled[i + 1].name });
+    }
 
-  // Update state safely
-  setRestingPlayer(localRestingPlayer);
-  setTeams(formedTeams);
-  generateAllMatches(formedTeams);
-  setCurrentMatchIndex(0);
-  setTeamStreaks(new Map());
-};
+    // Update state safely
+    setRestingPlayer(localRestingPlayer);
+    setTeams(formedTeams);
+    generateAllMatches(formedTeams);
+    setCurrentMatchIndex(0);
+    setTeamStreaks(new Map());
+  };
 
   const generateAllMatches = (teams: Team[]) => {
     const matches: Match[] = []
@@ -188,7 +188,7 @@ const formTeams = () => {
                 .split(" ")
                 .map((name) => name.trim())
                 .filter((name) => name.length > 0)
-
+                .map((name) => name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())
               if (names.length === 0) return
 
               names.forEach((name) => addPlayer(name))
